@@ -23,7 +23,7 @@ import { QueryResult } from "@upstash/vector";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { ChevronDown, Filter } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const SORT_OPTIONS = [
     { name: "None", value: "none" },
@@ -87,20 +87,23 @@ export default function Home() {
         sort: "none",
     });
 
+    const [url, setUrl] = useState("");
+
+    useEffect(() => {
+        setUrl(window.location.href);
+    }, []);
+
     const { data: products, refetch } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
-            const { data } = await axios.post<QueryResult<TProduct>[]>(
-                `https://product-filter-lilac.vercel.app/api/products`,
-                {
-                    filter: {
-                        sort: filter.sort,
-                        color: filter.color,
-                        price: filter.price.range,
-                        size: filter.size,
-                    },
-                }
-            );
+            const { data } = await axios.post<QueryResult<TProduct>[]>(`${url}api/products`, {
+                filter: {
+                    sort: filter.sort,
+                    color: filter.color,
+                    price: filter.price.range,
+                    size: filter.size,
+                },
+            });
 
             return data;
         },
